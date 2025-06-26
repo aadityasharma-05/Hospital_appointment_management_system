@@ -47,4 +47,38 @@ generateToken(user , "User login succesfully!" , 200 , res) ;
  
 });
 
-export const addNewAdmin = catchAsyncError(async(req,res,next))
+export const addNewAdmin = catchAsyncError(async (req, res, next) => {
+  const { firstName, lastName, email, phone, password, gender, dob, Aadhareno } = req.body;
+
+  if (!firstName || !lastName || !email || !phone || !password || !gender || !dob || !Aadhareno) {
+    return next(new ErrorHandler("Please fill the full form!", 400));
+  }
+
+  const isRegistered = await User.findOne({ email });
+
+  if (isRegistered) {
+    return next(new ErrorHandler("Admin with this email already exists", 400));
+  }
+
+  const admin = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    gender,
+    dob,
+    Aadhareno,
+    role: "Admin"
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "New Admin Registered!",
+  });
+});
+
+export const getALLDoctors = catchAsyncError(async(req,res,next) => {
+    const doctors = await User.find({role : "Doctor"});
+    res.status
+} )
