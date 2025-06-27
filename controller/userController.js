@@ -80,5 +80,47 @@ export const addNewAdmin = catchAsyncError(async (req, res, next) => {
 
 export const getALLDoctors = catchAsyncError(async(req,res,next) => {
     const doctors = await User.find({role : "Doctor"});
-    res.status
+    res.status(200).json({
+        success : true,
+        doctors
+    })
 } )
+
+export const getUserDetail = catchAsyncError(async(req ,res ,next) => {
+  const user = req.user ;
+  res.status(200).json({
+    success : true ,
+    user,
+  })
+})
+
+export const logoutAdmin = catchAsyncError(async (req, res, next) => {
+  res.status(200)
+    .cookie("adminToken", "", {
+      expires: new Date(0),
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: process.env.NODE_ENV === "production"
+    })
+    .json({
+      success: true,
+      message: "Admin logged out successfully"
+    });
+});
+
+export const logoutPatient = catchAsyncError(async (req, res, next) => {
+  res.status(200)
+    .cookie("patientToken", "", {
+      expires: new Date(0), // Set cookie to expire
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: process.env.NODE_ENV === "production"
+    })
+    .json({
+      success: true,
+      message: "Patient logged out successfully"
+    });
+});
+
+
+
