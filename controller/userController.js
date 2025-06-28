@@ -2,6 +2,7 @@ import {catchAsyncError} from "../middlewares/catchAsyncError.js"
 import ErrorHandler from "../middlewares/errorMiddleware.js"
 import {User} from "../models/userSchema.js"
 import {generateToken} from "../utils/jwtToken.js"
+import cloudinay from "cloudinary"
 
 export const patientRegister = catchAsyncError(async(req,res,next)=> {
     const {firstName , lastName , email , phone , password , gender , dob , Aadhareno,role} = req.body ;
@@ -123,4 +124,123 @@ export const logoutPatient = catchAsyncError(async (req, res, next) => {
 });
 
 
+// export const addNewDoctor = catchAsyncError(async(req,res,bext)=>{
+//   if(!req.files || Object.keys(req.files).lenght === 0){
+//     return next(new ErrorHandler("Doctor Avatar Required",400)) ; 
+//   }
+//   const {docAvatar} = req.files ;
+//   const allawedFormats = ["/image/png","/image/jpeg","/image/webp"] ;
+//   if(!allawedFormats.includes(docAvatar.mimetype)){
+//     return next(new ErrorHandler("File format not supportd"))
+//   }
+//   const {firstName , lastName , email , phone , password , gender , dob , Aadhareno,doctorDepartment} = req.body ;
+//   if(!firstName || !lastName || !email || !phone || !password || !gender || !dob || !Aadhareno ||!doctorDepartment){
+//   return next(new ErrorHandler("please fill Full form"));
+//   }
+//   const isRegistered = await User.findOne({email}) ;
+//   if(isRegistered){
+//       return next(new ErrorHandler(`${isRegistered.role} already exist with this Email`));
+//   }
 
+//   const cloudinaryRespones = await cloudinary.upload(docAvatar.tempFilePath) ;
+
+//   if(!cloudinaryRespones || cloudinaryRespones.error){
+//     console.log("cloudinay Error:",cloudinaryRespones.error || "unknow cloudinar error")
+//   }
+//   const doctor = await User.create({
+//     firstName , lastName , email , phone , password , gender , dob , Aadhareno, doctorDepartment, role : "doctor" , docAvatar:{
+//       public_id : cloudinaryRespones.public_id,
+//       url : cloudinaryRespones.secure_url,
+//     }
+//   })
+//   res.status(200).json({
+//  success : true ,
+//  message : "New Doctor Registered",
+//  doctor
+//   })
+// })
+
+
+
+export const addNewDoctor = catchAsyncError(async (req, res, next) => {
+  // ✅ 1. Check if files exist
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return next(new ErrorHandler("Doctor Avatar Required", 400));
+  }
+
+  const { docAvatar } = req.files;
+
+  // ✅ 2. Check file format
+  const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowedFormats.includes(docAvatar.mimetype)) {
+    return next(new ErrorHandler("File format not supported", 400));
+  }
+
+  // ✅ 3. Destructure and validate required fields
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    gender,
+    dob,
+    Aadhareno,
+    doctorDepartment,
+  } = req.body;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phone ||
+    !password ||
+    !gender ||
+    !dob ||
+    !Aadhareno ||
+    !doctorDepartment
+  ) {
+    return next(new ErrorHandler("Please fill the full form", 400));
+  }
+
+  // ✅ 4. Check if email already registered
+  const isRegistered = await User.findOne({ email });
+  if (isRegistered) {
+    return next(
+      new ErrorHandler(`${isRegistered.role} already exists with this email`, 400)
+    );
+  }
+
+  // ✅ 5. Upload avatar to Cloudinary
+  const cloudinaryResponse = await cloudinary.uploader.upload(docAvatar.tempFilePath);
+
+  if (!cloudinaryResponse || cloudinaryResponse.error) {
+    console.log("Cloudinary Error:", cloudinaryResponse.error || "Unknown error");
+    return next(new ErrorHandler("Failed to upload image", 500));
+  }
+
+  // ✅ 6. Create doctor in DB
+  const doctor = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    gender,
+    dob,
+    Aadhareno,
+    doctorDepartment,
+    role: "doctor",
+    docAvatar: {
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
+    },
+  });
+
+  // ✅ 7. Success response
+  res.status(200).json({
+    success: true,
+    message: "New Doctor Registered",
+    doctor,
+  });
+});
