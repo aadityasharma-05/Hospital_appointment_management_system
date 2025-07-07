@@ -1,4 +1,4 @@
-import mongoose from "mongoose" ;
+import mongoose from "mongoose";
 import validator from "validator"
 
 
@@ -43,27 +43,41 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     enum: ["Male", "Female", "Other"],
   },
-    appointmentDate : {
-        type : String ,
-        required : true ,
-    },
-   
-    doctor : {
-        firstname :{
-             type : String ,
-             required : true ,
-        },
-          lastname :{
-             type : String ,
-             required : true ,
-        }
-    }, 
 
-    hasVisited : {
-        
-             type : Boolean ,
-             required : true ,
-        
+  appointmentDate: {
+    type: String,
+    required: true,
+  },
+
+  doctor: {
+    firstname: {
+      type: String,
+      required: true,
+    },
+    lastname: {
+      type: String,
+      required: true,
     }
+  },
+
+  hasVisited: {
+
+    type: Boolean,
+    default : false,
+
+  },
+  
+    address: {
+    type: String,
+    required: true,
+  },
+
+  status: {
+    type: String,
+    enum: ["Pending", "Accepted", "Rejected"],
+    default: "Pending"
+  },
 
 });
+
+export const Appointment = mongoose.model("Appointment", appointmentSchema)
